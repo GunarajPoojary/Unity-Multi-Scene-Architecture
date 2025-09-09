@@ -13,15 +13,6 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private AudioSource _buttonClickSound;
     [SerializeField] private AudioSource _backgroundMusic;
 
-    [Header("Settings Reference")]
-    [SerializeField] private SettingsManager _settingsManager;
-
-    public GameObject MainMenuPanel { get { return _mainMenuPanel; } set { _mainMenuPanel = value; } }
-    public GameObject SettingsPanel { get { return _settingsPanel; } set { _settingsPanel = value; } }
-    public GameObject CreditsPanel { get { return _creditsPanel; } set { _creditsPanel = value; } }
-    public GameObject MapSelectPanel { get { return _mapSelectPanel; } set { _mapSelectPanel = value; } }
-    public SettingsManager SettingsManager { get { return _settingsManager; } set { _settingsManager = value; } }
-
     private void Start()
     {
         // Ensure main menu is active on start
