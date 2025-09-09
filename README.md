@@ -23,4 +23,4 @@ A sample Unity project demonstrating a scalable multi-scene architecture using:
 
 - **Clean Bootstrap Pattern**
     - Bootstrap scene initializes services and listens to events
-    - Allows simple swapping of feature scenes (e.g., Menu, Gameplay, Settings)
+    - Allows simple swapping of feature scenes 
