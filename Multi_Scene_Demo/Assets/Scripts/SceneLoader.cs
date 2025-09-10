@@ -11,6 +11,7 @@ public class SceneLoader : MonoBehaviour
 {
     [Header("Listening to")]
     [SerializeField] private LoadSceneEventChannelSO _loadSceneChannel = default;
+    [SerializeField] private UILoadingScreen _loadingScreen;
 
     private AsyncOperationHandle<SceneInstance> _sceneLoadingOperationHandle;
 
@@ -39,8 +40,12 @@ public class SceneLoader : MonoBehaviour
         if (_isLoading)
             return;
 
-        _sceneToLoad = sceneToLoad;
         _isLoading = true;
+
+        if (showLoadingScreen)
+            _loadingScreen.Show();
+
+        _sceneToLoad = sceneToLoad;
 
         StartCoroutine(UnloadPreviousScene());
     }
@@ -75,6 +80,8 @@ public class SceneLoader : MonoBehaviour
 
     private void OnNewSceneLoaded(AsyncOperationHandle<SceneInstance> operationHandle)
     {
+        _loadingScreen.Hide();
+
         //Save loaded scenes (to be unloaded at next load request)
         _currentlyLoadedScene = _sceneToLoad;
 
