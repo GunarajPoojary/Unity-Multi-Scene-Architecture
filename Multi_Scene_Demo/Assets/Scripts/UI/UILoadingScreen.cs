@@ -3,14 +3,20 @@ using UnityEngine;
 public class UILoadingScreen : MonoBehaviour
 {
     [SerializeField] private GameObject _container;
+    [SerializeField] private BoolEventChannelSO _toggleLoadingScreen = default;
 
-    public void Show()
+    private void OnEnable()
     {
-        _container.SetActive(true);
+        _toggleLoadingScreen.OnEventRaised += ToggleLoadingScreen;
     }
 
-    public void Hide()
+    private void OnDisable()
     {
-        _container.SetActive(false);
+        _toggleLoadingScreen.OnEventRaised -= ToggleLoadingScreen;
+    }
+
+    private void ToggleLoadingScreen(bool toggle)
+    {
+        _container.SetActive(toggle);
     }
 }

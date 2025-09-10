@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
@@ -9,80 +10,106 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class SceneLoader : MonoBehaviour
 {
+    [SerializeField] private GameSceneSO _gameplayScene = default;
+
     [Header("Listening to")]
-    [SerializeField] private LoadSceneEventChannelSO _loadSceneChannel = default;
-    [SerializeField] private UILoadingScreen _loadingScreen;
+    [SerializeField] private LoadSceneEventChannelSO _loadMapSceneChannel = default;
+    [SerializeField] private LoadSceneEventChannelSO _loadMenuSceneChannel = default;
+    [SerializeField] private BoolEventChannelSO _toggleLoadingScreen = default;
 
     private AsyncOperationHandle<SceneInstance> _sceneLoadingOperationHandle;
+    private AsyncOperationHandle<SceneInstance> _gameplayManagerLoadingOpHandle;
 
     private GameSceneSO _sceneToLoad;
     private GameSceneSO _currentlyLoadedScene;
+    private bool _showLoadingScreen;
+    private SceneInstance _gameplayManagerSceneInstance = new SceneInstance();
 
     private readonly float _fadeDuration = 0.5f;
     private bool _isLoading = false;
 
     private void OnEnable()
     {
-        _loadSceneChannel.OnLoadingRequested += LoadScene;
+        _loadMapSceneChannel.OnLoadingRequested += LoadMap;
+        _loadMenuSceneChannel.OnLoadingRequested += LoadMenu;
     }
 
     private void OnDisable()
     {
-        _loadSceneChannel.OnLoadingRequested -= LoadScene;
+        _loadMapSceneChannel.OnLoadingRequested -= LoadMap;
+        _loadMenuSceneChannel.OnLoadingRequested -= LoadMenu;
     }
 
-    /// <summary>
-    /// This function loads the scenes passed as array parameter
-    /// </summary>
-    private void LoadScene(GameSceneSO sceneToLoad, bool showLoadingScreen, bool fadeScreen)
+    private void LoadMap(GameSceneSO sceneToLoad, bool showLoadingScreen, bool fadeScreen)
     {
-        //Prevent a double-loading, for situations where the player falls in two Exit colliders in one frame
+        StartSceneLoading(sceneToLoad, showLoadingScreen, fadeScreen, loadGameplayManager: true);
+    }
+
+    private void LoadMenu(GameSceneSO sceneToLoad, bool showLoadingScreen, bool fadeScreen)
+    {
+        StartSceneLoading(sceneToLoad, showLoadingScreen, fadeScreen, loadGameplayManager: false);
+    }
+
+    private void StartSceneLoading(GameSceneSO sceneToLoad, bool showLoadingScreen, bool fadeScreen, bool loadGameplayManager)
+    {
         if (_isLoading)
             return;
 
         _isLoading = true;
-
-        if (showLoadingScreen)
-            _loadingScreen.Show();
-
+        _showLoadingScreen = showLoadingScreen;
         _sceneToLoad = sceneToLoad;
+
+        if (loadGameplayManager)
+        {
+            if (_gameplayManagerSceneInstance.Scene == null || !_gameplayManagerSceneInstance.Scene.isLoaded)
+            {
+                _gameplayManagerLoadingOpHandle = _gameplayScene.sceneReference.LoadSceneAsync(LoadSceneMode.Additive, true);
+                _gameplayManagerLoadingOpHandle.Completed += OnGameplayManagersLoaded;
+                return;
+            }
+        }
+        else
+        {
+            if (_gameplayManagerSceneInstance.Scene != null && _gameplayManagerSceneInstance.Scene.isLoaded)
+            {
+                Addressables.UnloadSceneAsync(_gameplayManagerLoadingOpHandle, true);
+            }
+        }
 
         StartCoroutine(UnloadPreviousScene());
     }
 
-    /// <summary>
-    /// In both Map and Menu loading, this function takes care of removing previously loaded scenes.
-    /// </summary>
+    private void OnGameplayManagersLoaded(AsyncOperationHandle<SceneInstance> operationHandle)
+    {
+        _gameplayManagerSceneInstance = _gameplayManagerLoadingOpHandle.Result;
+        StartCoroutine(UnloadPreviousScene());
+    }
+
     private IEnumerator UnloadPreviousScene()
     {
         yield return new WaitForSeconds(_fadeDuration);
 
-        if (_currentlyLoadedScene != null) //would be null if the game was started in Initialisation
+        if (_currentlyLoadedScene != null && _currentlyLoadedScene.sceneReference.OperationHandle.IsValid())
         {
-            if (_currentlyLoadedScene.sceneReference.OperationHandle.IsValid())
-            {
-                //Unload the scene through its AssetReference, i.e. through the Addressable system
-                _currentlyLoadedScene.sceneReference.UnLoadScene();
-            }
+            _currentlyLoadedScene.sceneReference.UnLoadScene();
         }
 
         LoadNewScene();
     }
 
-    /// <summary>
-    /// Kicks off the asynchronous loading of a scene, either menu or Map.
-    /// </summary>
     private void LoadNewScene()
     {
+        if (_showLoadingScreen)
+        {
+            _toggleLoadingScreen.RaiseEvent(true);
+        }
+
         _sceneLoadingOperationHandle = _sceneToLoad.sceneReference.LoadSceneAsync(LoadSceneMode.Additive, true, 0);
         _sceneLoadingOperationHandle.Completed += OnNewSceneLoaded;
     }
 
     private void OnNewSceneLoaded(AsyncOperationHandle<SceneInstance> operationHandle)
     {
-        _loadingScreen.Hide();
-
-        //Save loaded scenes (to be unloaded at next load request)
         _currentlyLoadedScene = _sceneToLoad;
 
         Scene loadedScene = operationHandle.Result.Scene;

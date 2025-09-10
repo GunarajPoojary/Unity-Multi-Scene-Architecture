@@ -562,6 +562,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _container: {fileID: 1233556757}
+  _toggleLoadingScreen: {fileID: 11400000, guid: f451d66fccbfc7c44864ec030a7bdc4e, type: 2}
 --- !u!1 &643682682
 GameObject:
   m_ObjectHideFlags: 0
@@ -606,8 +607,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 046223059c7123b438f67c211e49a315, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _loadSceneChannel: {fileID: 11400000, guid: 275dc93bf4cca7a49b788ae9e3de02db, type: 2}
-  _loadingScreen: {fileID: 563953056}
+  _gameplayScene: {fileID: 11400000, guid: c5f21c65b2ab34b4bbc493e8490558ca, type: 2}
+  _loadMapSceneChannel: {fileID: 11400000, guid: 275dc93bf4cca7a49b788ae9e3de02db, type: 2}
+  _loadMenuSceneChannel: {fileID: 11400000, guid: 48db1582080188a4abe0bbf6b2d6f181, type: 2}
+  _toggleLoadingScreen: {fileID: 11400000, guid: f451d66fccbfc7c44864ec030a7bdc4e, type: 2}
 --- !u!1 &664923145
 GameObject:
   m_ObjectHideFlags: 0
@@ -961,6 +964,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _container: {fileID: 0}
+  _toggleLoadingScreen: {fileID: 0}
 --- !u!114 &1233556760
 MonoBehaviour:
   m_ObjectHideFlags: 0

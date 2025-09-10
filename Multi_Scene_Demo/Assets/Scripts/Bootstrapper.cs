@@ -13,7 +13,7 @@ public class Bootstrapper : MonoBehaviour
 	[SerializeField] private GameSceneSO _menuScene = default;
 
 	[Header("Broadcasting on")]
-	[SerializeField] private AssetReferenceScriptableObject _loadSceneChannel = default;
+	[SerializeField] private AssetReferenceScriptableObject _loadMenuSceneChannel = default;
 
     private const int FIRST_SCENE_INDEX = 0;
 
@@ -25,7 +25,7 @@ public class Bootstrapper : MonoBehaviour
 
 	private void LoadEventChannel(AsyncOperationHandle<SceneInstance> operationHandle)
 	{
-		_loadSceneChannel.LoadAssetAsync<LoadSceneEventChannelSO>().Completed += LoadMainMenu;
+		_loadMenuSceneChannel.LoadAssetAsync<LoadSceneEventChannelSO>().Completed += LoadMainMenu;
 	}
 
 	private void LoadMainMenu(AsyncOperationHandle<LoadSceneEventChannelSO> operationHandle)
